@@ -21,64 +21,51 @@ var channelsLoaded = 0;
 // the 'T' Temperature left axis, or the 'O' Other right axis.
 var channelKeys =[];
 var channelsList=[];
-var pml1_api_key = '4SVELMSN8FAMOA8F';
+var pml1_api_key = 'HKOOY5ACAVUFXF2N';
 var api_key_dict = {
-  'pml-1': '4SVELMSN8FAMOA8F',
+  'ENP1-1': 'HKOOY5ACAVUFXF2N',
 }
-var  chart_axes = [{
-            title: {
-                text: 'Voltage-Current'
-            },
-            id: 'Y2',
-            min: 0,
-            // max: 300,
-            offset:35
-    }, {
-            title: {
-                text: 'Watt'
-            },
-            opposite: false,
-            offset:0,
-            id: 'Y1'
+var chart_axes = [
+  {
+    title: {
+      text: 'Voltage'
     },
-    {
-            title: {
-                text: 'KWh'
-            },
-            opposite: false,
-            offset:50,
-            id: 'Y5'
-    }
-  ];
+    id: 'Y2',
+    min: 0,
+    // max: 300,
+    offset:35
+  },
+  {
+    title: {
+      text: 'Amount'
+    },
+    id: 'Y3',
+    min: 0,
+    // max: 300,
+    offset:50
+  },  
+  {
+    title: {
+        text: 'Watt'
+    },
+    opposite: false,
+    offset: 0,
+    id: 'Y1'
+  },
+  {
+    title: {
+        text: 'KWh'
+    },
+    opposite: false,
+    offset: 50,
+    id: 'Y5'
+  }
+];
 var channel_data =[
   {
-   'api_key': '4SVELMSN8FAMOA8F',
-   'header': 'Energy Planner',
-   'channelNumber': 605081,
-   'yaxes': [{
-            title: {
-                text: 'Voltage-Current'
-            },
-            id: 'Y2',
-            min: 0,
-            // max: 300,
-            offset:35
-    }, {
-            title: {
-                text: 'Watt'
-            },
-            opposite: false,
-            offset:0,
-            id: 'Y1'
-    },
-    {
-            title: {
-                text: 'KWh'
-            },
-            opposite: false,
-            offset:50,
-            id: 'Y5'
-    }]
+   'api_key': 'HKOOY5ACAVUFXF2N',
+   'header': 'ENERGY PLANNER - SINGLE PHASE',
+   'channelNumber': 1198531,
   },
 ]
 // GET https://api.thingspeak.com/channels/543288/status.json?api_key=SHIF9KRBD8RL0AM7
@@ -86,8 +73,19 @@ var channel_data =[
 
 
 
-channelsList.push({channelNumber:605081, name:'PML-1',key:pml1_api_key,
-                  fieldList:[{field:1,axis:'Y1'},{field:2,axis:'Y5'},{field:3,axis:'Y2'},{field:4,axis:'Y2'},{field:5,axis:'Y2'},{field:6,axis:'Y2'},{field:7,axis:'Y2'},{field:8,axis:'Y2'}]});
+channelsList.push({
+  channelNumber:1198531, 
+  name:'ENP1-1',
+  key: pml1_api_key,
+  fieldList:[
+    { field: 1, axis:'Y5' }, 
+    { field: 2, axis:'Y1' }, 
+    { field: 3, axis:'Y2' }, 
+    { field: 4, axis:'Y3' }, 
+    { field: 5, axis:'Y2' }, 
+    { field: 6, axis:'Y2' }
+  ]
+});
  
 channelKeys.push(channelsList[0]);
 
@@ -125,6 +123,7 @@ $(document).ready(function()
      var channel_no = $('#select-channel').find(":selected").val();
       $.each( channel_data, function( i, l ){
         if (l['channelNumber'] == channel_no) {
+                console.log('yaxes',l['yaxes'])
                 chart_axes = l['yaxes'];
                 $('#page-header').text(l['header'])
             }
@@ -301,18 +300,17 @@ function populate_channelKeys(){
                   /*(window.console && console.log('inside interval field name:', channelKeys[1].fieldList[1].data[2499][1]);
                   var kwhTitle = parseFloat(channelKeys[0].fieldList[3].data[2499][1]);
                   dynamicChart.series[chartSeriesIndex].setTitle({ text: "KWh = "+kwhTitle});*/
-                  if(channelKeys[0].name.includes("PML")) {
-                    let slabRate = amount = threshold = wattHr = 'NO DATA';
-                    if(channelKeys[0].fieldList[2].data.length > 0 )
-                      slabRate = `Slabrate = ${parseFloat(data.field3)}, `
+                  if(channelKeys[0].name.includes("ENP1")) {
+                    let amount = threshold = wattHr = 'NO DATA';
+
                     if(channelKeys[0].fieldList[3].data.length > 0 )  
                       amount = `Amount = ${parseFloat(data.field4)}`
                     if(channelKeys[0].fieldList[0].data.length > 0 )
-                      wattHr = `Watt-Hr = ${parseFloat(data.field1)} `
+                      wattHr = `KWh = ${parseFloat(data.field1)} `
                     if(channelKeys[0].fieldList[4].data.length > 0 )
                       threshold = `Threshold = ${parseFloat(data.field5)}, `
 
-                    dynamicChart.setTitle({text: slabRate + amount}, { text: threshold + wattHr });
+                    dynamicChart.setTitle({text: amount}, { text: threshold + wattHr });
                   }
                 });
                })(channelIndex);
@@ -448,22 +446,20 @@ function populate_channelKeys(){
                               name: channelKeys[channelIndex].fieldList[fieldIndex].name});
     }
   }
-  if(channelKeys[0].name.includes("PML")) {
+  if(channelKeys[0].name.includes("ENP1")) {
     window.console && console.log('getJSON field name:', channelKeys[0]);
     var lastDataIndex = channelKeys[0].fieldList[1].data.length-1;
     console.log(channelKeys[0].fieldList[1].data[0])
     console.log(lastDataIndex)
 
-    let slabRate = amount = threshold = wattHr = 'NO DATA';
-    if(channelKeys[0].fieldList[2].data.length > 0 )
-      slabRate = `Slabrate = ${parseFloat(channelKeys[0].fieldList[2].data[lastDataIndex][1])}, `
+    let amount = threshold = wattHr = 'NO DATA';
     if(channelKeys[0].fieldList[3].data.length > 0 )  
       amount = `Amount = ${parseFloat(channelKeys[0].fieldList[3].data[lastDataIndex][1])}`
     if(channelKeys[0].fieldList[0].data.length > 0 )
-      wattHr = `Watt-Hr = ${parseFloat(channelKeys[0].fieldList[0].data[lastDataIndex][1])} `
+      wattHr = `KWh = ${parseFloat(channelKeys[0].fieldList[0].data[lastDataIndex][1])} `
     if(channelKeys[0].fieldList[0].data.length > 0 )
       threshold = `Threshold = ${parseFloat(channelKeys[0].fieldList[4].data[lastDataIndex][1])}, `
-    chartOptions.title.text = slabRate + amount;
+    chartOptions.title.text = amount;
     chartOptions.subtitle.text = threshold + wattHr;
     chartOptions.title.style = {
       color: 'red',
@@ -582,7 +578,7 @@ async function loadChannelHistory(sentChannelIndex,channelNumber,key,sentFieldLi
     <title>AVATAR RENEWABLES</title>
   </head>
   <body style="background-color: white;">
-        <h3 id="page-header">ENERGY PLANNER - 3 PHASE</h3>
+        <h3 id="page-header">ENERGY PLANNER - SINGLE PHASE</h3>
 
     <div id="chart-container" style="height: 600px;"><br>
       Highstock Chart Here<br>
